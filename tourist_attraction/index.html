@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Tourist Attraction</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body onload="initMap()">
+  <div id="controls">
+    <div>
+      <label for="stateDropdown">Select State:</label>
+      <select id="stateDropdown">
+        <option value="">All States</option>
+      </select>
+      
+      <span id="cityWrapper" class="hidden">
+        <label for="cityDropdown">Select City:</label>
+        <select id="cityDropdown">
+          <option value="">All Cities</option>
+        </select>
+      </span>
+      
+      <span id="categoryWrapper" class="hidden">
+        <label for="categoryDropdown">Select Category:</label>
+        <select id="categoryDropdown">
+          <option value="">All Categories</option>
+        </select>
+      </span>
+    </div>
+  </div>
+  <div id="map"></div>
+
+  <script src="script.js"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD8M0CftXaL9po1r6kDnS2tEDQrmqfjwvg"></script>
+</body>
+</html>

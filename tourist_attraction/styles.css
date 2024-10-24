@@ -1,0 +1,111 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+body, html {
+    height: 100%;
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background-color: #121212;
+    color: #ffffff;
+}
+
+#controls {
+    padding: 15px;
+    background: linear-gradient(135deg, #1e1e1e 0%, #292929 100%);
+    color: #ffffff;
+    border-bottom: 2px solid #495057;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    position: absolute;
+    top: 0;
+    width: 100%;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#controls label {
+    margin-right: 10px;
+    font-weight: bold;
+    color: #80bdff;
+}
+
+#controls select {
+    margin-right: 20px;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #495057;
+    background-color: #292929;
+    color: #ffffff;
+    font-size: 14px;
+    cursor: pointer;
+    transition: border-color 0.3s, background-color 0.3s, transform 0.3s;
+    flex: 1 0 100%;
+    margin-bottom: 10px;
+}
+
+#controls select:focus {
+    border-color: #80bdff;
+    outline: none;
+    background-color: #3e3e3e;
+}
+
+#controls select:hover {
+    transform: scale(1.05);
+}
+
+#map {
+    height: calc(100vh - 50px);
+    width: 100%;
+    position: absolute;
+    top: 50px;
+}
+
+.hidden {
+    display: none;
+}
+
+.info-card {
+    position: absolute;
+    background: #ffffff;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    z-index: 999;
+    transform: translate(-50%, -100%);
+    max-width: 200px;
+    text-align: center;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.info-card:hover {
+    transform: translate(-50%, -100%) scale(1.05);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+}
+
+.info-card img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-bottom: 8px;
+}
+
+.info-card strong {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #121212;
+}
+
+@media (max-width: 768px) {
+    #controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    #map {
+        height: calc(100vh - 100px);
+        top: 100px;
+    }
+}

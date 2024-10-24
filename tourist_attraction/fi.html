@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Map with Google Sheets Data</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    
+body, html {
+  height: 100%;
+  margin: 0;
+  font-family: 'Arial', sans-serif;
+}
+
+#controls {
+  padding: 15px;
+  background-color: #343a40;
+  color: #fff;
+  border-bottom: 2px solid #495057;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  position: absolute;
+  top: 0;
+  width: 100%;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap; 
+  justify-content: space-between;
+  align-items: center;
+}
+
+#controls label {
+  margin-right: 10px;
+  font-weight: bold;
+}
+
+#controls select {
+  margin-right: 20px;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ced4da;
+  background-color: #ffffff;
+  font-size: 14px;
+  cursor: pointer;
+  transition: border-color 0.3s;
+  color: #495057;
+  flex: 1 0 100%; 
+  margin-bottom: 10px; 
+}
+
+#controls select:focus {
+  border-color: #80bdff;
+  outline: none;
+}
+
+#map {
+  height: calc(100vh - 50px); 
+  width: 100%;
+  position: absolute;
+  top: 50px;
+}
+
+.hidden {
+  display: none;
+}
+
+.info-card {
+  position: absolute;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  z-index: 999;
+  transform: translate(-50%, -100%);
+  max-width: 200px;
+  text-align: center;
+}
+
+.info-card img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  margin-bottom: 8px;
+}
+
+.info-card strong {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+
+@media (max-width: 768px) {
+  #controls {
+    flex-direction: column; 
+    align-items: stretch;
+  }
+
+  #map {
+    height: calc(100vh - 100px); 
+    top: 100px; 
+  }
+}
+
+  </style>
+</head>
+<body onload="initMap()">
+  <div id="controls">
+    <div>
+      <label for="stateDropdown">Select State:</label>
+      <select id="stateDropdown">
+        <option value="">All States</option>
+      </select>
+      
+      <span id="cityWrapper" class="hidden">
+        <label for="cityDropdown">Select City:</label>
+        <select id="cityDropdown">
+          <option value="">All Cities</option>
+        </select>
+      </span>
+      
+      <span id="categoryWrapper" class="hidden">
+        <label for="categoryDropdown">Select Category:</label>
+        <select id="categoryDropdown">
+          <option value="">All Categories</option>
+        </select>
+      </span>
+    </div>
+  </div>
+  <div id="map"></div>
+
+  <script>
+    let map;
+let markers = [];
+let locations = [];
+
+const categoryIcons = {
+  'Temple': 'https://img.icons8.com/fluency/48/000000/temple.png',
+  'War Memorial': 'https://img.icons8.com/fluency/48/000000/military.png',
+  'Theme Park': 'https://img.icons8.com/fluency/48/000000/theme-park.png',
+  'Observatory': 'https://img.icons8.com/fluency/48/000000/observatory.png',
+  'Fort': 'https://img.icons8.com/fluency/48/000000/fort.png',
+  'Stepwell': 'https://img.icons8.com/fluency/48/000000/well.png',
+  'Park': 'https://img.icons8.com/fluency/48/000000/park.png',
+  'Museum': 'https://img.icons8.com/fluency/48/000000/museum.png',
+  'Zoo': 'https://img.icons8.com/fluency/48/000000/zoo.png',
+  'Monument': 'https://img.icons8.com/fluency/48/000000/monument.png',
+  'National Park': 'https://img.icons8.com/fluency/48/000000/national-park.png',
+  'Beach': 'https://img.icons8.com/fluency/48/000000/beach.png',
+  'Amusement Park': 'https://img.icons8.com/fluency/48/000000/amusement-park.png',
+  'Palace': 'https://img.icons8.com/fluency/48/000000/palace.png',
+  'Lake': 'https://img.icons8.com/fluency/48/000000/lake.png',
+  'Bridge': 'https://img.icons8.com/fluency/48/000000/bridge.png',
+  'Church': 'https://img.icons8.com/fluency/48/000000/church.png',
+  'Waterfall': 'https://img.icons8.com/fluency/48/000000/waterfall.png',
+  'Bird Sanctuary': 'https://img.icons8.com/fluency/48/000000/bird.png',
+  'Cave': 'https://img.icons8.com/fluency/48/000000/cave.png',
+  'Valley': 'https://img.icons8.com/fluency/48/000000/valley.png',
+  'Gurudwara': 'https://img.icons8.com/fluency/48/000000/gurudwara.png',
+  'Wildlife Sanctuary': 'https://img.icons8.com/fluency/48/000000/wildlife.png',
+  'Hill': 'https://img.icons8.com/fluency/48/000000/hill.png',
+  'Aquarium': 'https://img.icons8.com/fluency/48/000000/aquarium.png'
+ 
+};
+
+async function initMap() {
+  const scriptUrl = 'https://script.google.com/macros/s/AKfycbwvhF9sFMJKj8SB3eC0ewPdt5Tn4w5yrUg2i1l0y6oGCuXUT-zPBl4TuO4RVETUvDEM/exec';
+
+  try {
+    const response = await fetch(scriptUrl);
+    if (!response.ok) {
+      throw new Error('Failed to fetch data');
+    }
+    const jsonData = await response.json();
+
+    locations = jsonData.data.map(row => ({
+      name: row.Name,
+      lat: parseFloat(row.Latitude),
+      lng: parseFloat(row.Longitude),
+      state: row.State,
+      city: row.City,
+      category: row.Category
+    }));
+
+    map = new google.maps.Map(document.getElementById('map'), {
+      zoom: 5,
+      center: { lat: 20.5937, lng: 78.9629 }
+    });
+
+    populateDropdowns();
+  } catch (error) {
+    console.error('Error fetching or parsing data:', error);
+  }
+}
+
+function updateMarkers() {
+  const selectedState = document.getElementById('stateDropdown').value;
+  const selectedCity = document.getElementById('cityDropdown').value;
+  const selectedCategory = document.getElementById('categoryDropdown').value;
+
+  markers.forEach(marker => marker.setMap(null));
+  markers = [];
+
+  const infoCards = document.querySelectorAll('.info-card');
+  infoCards.forEach(card => card.remove());
+
+  if (!selectedState) {
+    return;
+  }
+
+  const filteredLocations = locations.filter(location => {
+    return (!selectedState || location.state === selectedState) &&
+           (!selectedCity || location.city === selectedCity) &&
+           (!selectedCategory || location.category === selectedCategory);
+  });
+
+  filteredLocations.forEach(location => {
+    const position = new google.maps.LatLng(location.lat, location.lng);
+    const marker = new google.maps.Marker({
+      position,
+      map,
+      title: location.name
+    });
+
+    const infoCard = document.createElement('div');
+    infoCard.className = 'info-card';
+    const iconUrl = categoryIcons[location.category] || 'https://img.icons8.com/fluency/48/000000/map-pin.png';
+    infoCard.innerHTML = `<img src="${iconUrl}" alt="${location.category}"><strong>${location.name}</strong><br>${location.category}`;
+    map.controls[google.maps.ControlPosition.TOP_CENTER].push(infoCard);
+
+    const overlayProjection = new google.maps.OverlayView();
+    overlayProjection.onAdd = function() {
+      const panes = this.getPanes();
+      panes.floatPane.appendChild(infoCard);
+    };
+    overlayProjection.draw = function() {
+      const projection = this.getProjection();
+      const position = projection.fromLatLngToDivPixel(marker.getPosition());
+      infoCard.style.left = position.x + 'px';
+      infoCard.style.top = position.y + 'px';
+    };
+    overlayProjection.onRemove = function() {
+      infoCard.parentNode.removeChild(infoCard);
+    };
+    overlayProjection.setMap(map);
+
+    markers.push(marker);
+  });
+}
+
+function populateDropdowns() {
+  const stateDropdown = document.getElementById('stateDropdown');
+  const cityDropdown = document.getElementById('cityDropdown');
+  const categoryDropdown = document.getElementById('categoryDropdown');
+
+  const states = [...new Set(locations.map(location => location.state))].sort();
+  states.forEach(state => {
+    const option = document.createElement('option');
+    option.value = state;
+    option.text = state;
+    stateDropdown.add(option);
+  });
+
+  stateDropdown.addEventListener('change', function() {
+    const selectedState = this.value;
+    updateDropdowns(selectedState);
+    updateMarkers();
+
+    const cityWrapper = document.getElementById('cityWrapper');
+    const categoryWrapper = document.getElementById('categoryWrapper');
+
+    if (selectedState) {
+      cityWrapper.classList.remove('hidden');
+      categoryWrapper.classList.remove('hidden');
+    } else {
+      cityWrapper.classList.add('hidden');
+      categoryWrapper.classList.add('hidden');
+    }
+  });
+
+  cityDropdown.addEventListener('change', function() {
+    updateMarkers();
+    updateCategoryDropdown(this.value);
+  });
+
+  categoryDropdown.addEventListener('change', updateMarkers);
+}
+
+function updateDropdowns(selectedState) {
+  const cityDropdown = document.getElementById('cityDropdown');
+  const categoryDropdown = document.getElementById('categoryDropdown');
+
+  cityDropdown.innerHTML = '<option value="">All Cities</option>';
+  categoryDropdown.innerHTML = '<option value="">All Categories</option>';
+
+  const filteredLocations = locations.filter(location => !selectedState || location.state === selectedState);
+
+  const cities = [...new Set(filteredLocations.map(location => location.city))].sort();
+  const categories = [...new Set(filteredLocations.map(location => location.category))].sort();
+
+  cities.forEach(city => {
+    const option = document.createElement('option');
+    option.value = city;
+    option.text = city;
+    cityDropdown.add(option);
+  });
+
+  categories.forEach(category => {
+    const option = document.createElement('option');
+    option.value = category;
+    option.text = category;
+    categoryDropdown.add(option);
+  });
+}
+
+function updateCategoryDropdown(selectedCity) {
+  const categoryDropdown = document.getElementById('categoryDropdown');
+  categoryDropdown.innerHTML = '<option value="">All Categories</option>';
+
+  const filteredLocations = locations.filter(location => !selectedCity || location.city === selectedCity);
+
+  const categories = [...new Set(filteredLocations.map(location => location.category))].sort();
+
+  categories.forEach(category => {
+    const option = document.createElement('option');
+    option.value = category;
+    option.text = category;
+    categoryDropdown.add(option);
+  });
+}
+
+  </script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD8M0CftXaL9po1r6kDnS2tEDQrmqfjwvg"></script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transport Mode</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css">
+</head>
+<body>
+    <div class="header">
+        <h1>Transport Mode</h1>
+    </div>
+    <div class="container">
+        <div id="map-container">
+            <div id="map"></div>
+        </div>
+        <div id="form-container">
+            <h2>Find Route</h2>
+            <form id="routeForm">
+                <label for="start">Start City:</label>
+                <input type="text" id="start" name="start" placeholder="Enter start city" required>
+                <label for="end">End City:</label>
+                <input type="text" id="end" name="end" placeholder="Enter end city" required>
+                <label for="mode">Transport Mode:</label>
+                <select id="mode" name="mode">
+                    <option value="driving">Driving</option>
+                    <option value="walking">Walking</option>
+                    <option value="cycling">Cycling</option>
+                </select>
+                <button type="submit" id="routeButton">Get Route</button>
+            </form>
+        </div>
+    </div>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="script.js"></script>
+   
+</body>
+</html>
